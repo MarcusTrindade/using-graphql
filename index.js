@@ -1,20 +1,28 @@
 const { ApolloServer, gql} = require('apollo-server')
 
+const perfis = [
+{id: 1, nome: 'Comum'}, 
+{id: 2, nome: 'Administrador'}
+]
+
 const usuarios = [{
   id: 1,
   nome: 'João Silva',
   email: 'jsilva@zemail.com',
-  idade: 29
+  idade: 29,
+  perfil_id: 1
 }, {
   id: 2,
   nome: 'Marcus Trindade',
   email: 'marcao@zemail.com',
-  idade: 20
+  idade: 20,
+  perfil_id: 2
 }, {
   id: 3,
-  nome: "Rafael Martini",
-  email: "rafael@zemail.com",
-  idade: 33
+  nome: 'Rafael Martini',
+  email: 'rafael@zemail.com',
+  idade: 33,
+  perfil_id: 1
 }]
 
 // Mapear e modelar os dados (Schema da api)
@@ -29,12 +37,18 @@ const typeDefs = gql`
   }
 
   type Usuario {
-    id: ID
+    id: Int
     nome: String!
     email: String!
     idade: Int
     salario: Float
     vip: Boolean
+    perfil: Perfil
+  }
+
+  type Perfil {
+    id: Int
+    nome: String!
   }
 
   # Pontos de entrada da API
@@ -46,9 +60,10 @@ const typeDefs = gql`
     numerosMegaSena: [Int!]!
     usuarios: [Usuario]
     usuario(id: Int): Usuario  
+    perfis: [Perfil]
+    perfil(id: Int): Perfil
   }
 `
-
 const resolvers = {
   Produto: {
     precoComDesconto(produto){
@@ -61,6 +76,11 @@ const resolvers = {
   Usuario: {
     salario(usuario){
       return usuario.salario_real
+    },
+    perfil(usuario) {
+      const sels = perfis
+        .filter(p => p.id === usuario.perfil_id)
+      return sels ? sels[0] : null
     }
   },
   Query: {
@@ -100,6 +120,14 @@ const resolvers = {
     usuario(_, { id }){
       const sels = usuarios
         .filter(u => u.id === id)
+      return sels ? sels[0] : null
+    },
+    perfis() {
+      return perfis
+    },
+    perfil(_, { id }){
+      const sels = perfis
+        .filter(p => p.id === id)
       return sels ? sels[0] : null
     }
   }
